@@ -1,9 +1,28 @@
+#Define o Host a ser provisionado
 - hosts: terraform-ansible
+#Tarefas de instalacão do Python e Virtualenv
   tasks:
   - name: Instalando o python3, virtualenv
     apt:
       pkg:
       - python3
       - virtualenv
-      update_cache: yes
-    become: yes
+      update_cache: yes #Atualiza os pacotes instalados 
+    become: yes #Instala os pacotes como SUDO
+  - name: Instalando dependencias com pip (Django e Django Rest)
+    pip: 
+      virtualenv: /home/ubuntu/projeto/venv
+      name:
+        - django
+        - djangorestframework
+  #Tarefa shell para ativar o Django
+  - name: Iniciando o projeto
+    shell: '. /home/ubuntu/projeto/venv/bin/activate; django-admin startproject setup /home/ubuntu/projeto'
+    ignore_errors: yes  
+  - name: Alterando o hosts do settings
+    lineinfile:
+      path: /home/ubuntu/projeto/setup/settings.py
+      regexp: 'ALLOWED_HOSTS'
+      line: 'ALLOWED_HOSTS = ["*"]'
+      backrefs: yes
+      
